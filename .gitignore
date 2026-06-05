@@ -1,0 +1,70 @@
+# ─── Dependencies ─────────────────────────────────────────────────
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# ─── Next.js ──────────────────────────────────────────────────────
+/.next/
+/out/
+
+# ─── Build / Production ───────────────────────────────────────────
+/build
+/dist
+
+# ─── Environment Variables ────────────────────────────────────────
+# Never commit secrets or credentials
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env*.local
+
+# ─── Prisma ───────────────────────────────────────────────────────
+# Prisma generated client (auto-generated on postinstall)
+/node_modules/.prisma
+# Ignore migration lock if using db push workflow
+# prisma/migrations (comment this out if you ARE using migrate)
+
+# ─── pnpm ─────────────────────────────────────────────────────────
+.pnpm-debug.log*
+
+# ─── Debug Logs ───────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# ─── OS Files ─────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ─── Editor / IDE ─────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# ─── TypeScript ───────────────────────────────────────────────────
+*.tsbuildinfo
+next-env.d.ts
+
+# ─── Testing ──────────────────────────────────────────────────────
+/coverage
+
+# ─── Misc ─────────────────────────────────────────────────────────
+*.pem
+.vercel
+.turbo
+
+# ─── Uploaded / Generated Files ───────────────────────────────────
+/public/uploads
+/uploads
