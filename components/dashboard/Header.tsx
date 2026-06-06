@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import ReactDOM from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
@@ -163,7 +164,8 @@ export default function Header({ className }: HeaderProps = {}) {
   const breadcrumbs = getBreadcrumbs();
 
   return (
-    <header className={`sticky top-0 ${isReceiptModalOpen || isPaymentModalOpen ? "z-[60]" : "z-20"} flex h-16 w-full min-w-0 items-center justify-between border-b border-slate-200 bg-white/85 px-4 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/80 md:px-6 shadow-sm transition-colors duration-200 ${className || ""}`}>
+    <>
+    <header className={`sticky top-0 z-20 flex h-16 w-full min-w-0 items-center justify-between border-b border-slate-200 bg-white/85 px-4 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/80 md:px-6 shadow-sm transition-colors duration-200 ${className || ""}`}>
       
       {/* Left side: Sidebar trigger & Breadcrumbs */}
       <div className="flex items-center gap-3">
@@ -453,10 +455,14 @@ export default function Header({ className }: HeaderProps = {}) {
         </div>
       </div>
 
-      {/* ─── QUICK ACTION: NEW RECEIPT MODAL ─────────────────────────── */}
+    </header>
+
+    {/* ─── QUICK ACTION MODALS — rendered via portal directly on document.body
+         to fully escape the header's sticky stacking context ────────────── */}
+    {typeof document !== "undefined" && ReactDOM.createPortal(
       <AnimatePresence>
         {isReceiptModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
+          <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -486,23 +492,25 @@ export default function Header({ className }: HeaderProps = {}) {
                 Fill details to record a receipt entry into the active trust ledger.
               </p>
 
-              <ReceiptForm 
+              <ReceiptForm
                 onSuccess={() => {
                   queryClient.invalidateQueries({ queryKey: ["receipts", currentTrust?.id] });
                   queryClient.invalidateQueries({ queryKey: ["dashboardStats", currentTrust?.id] });
                   setIsReceiptModalOpen(false);
-                }} 
-                onCancel={() => setIsReceiptModalOpen(false)} 
+                }}
+                onCancel={() => setIsReceiptModalOpen(false)}
               />
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
 
-      {/* ─── QUICK ACTION: NEW PAYMENT MODAL ─────────────────────────── */}
+    {typeof document !== "undefined" && ReactDOM.createPortal(
       <AnimatePresence>
         {isPaymentModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
+          <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -532,18 +540,20 @@ export default function Header({ className }: HeaderProps = {}) {
                 Fill details to record a payment entry into the active trust ledger.
               </p>
 
-              <PaymentForm 
+              <PaymentForm
                 onSuccess={() => {
                   queryClient.invalidateQueries({ queryKey: ["payments", currentTrust?.id] });
                   queryClient.invalidateQueries({ queryKey: ["dashboardStats", currentTrust?.id] });
                   setIsPaymentModalOpen(false);
-                }} 
-                onCancel={() => setIsPaymentModalOpen(false)} 
+                }}
+                onCancel={() => setIsPaymentModalOpen(false)}
               />
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
-    </header>
+      </AnimatePresence>,
+      document.body
+    )}
+    </>
   );
 }
