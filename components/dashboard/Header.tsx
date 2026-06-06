@@ -19,7 +19,13 @@ import {
   HelpCircle,
   Activity,
   Check,
+  Banknote,
+  CreditCard,
+  X,
 } from "lucide-react";
+import { usePermissions } from "@/lib/hooks/usePermissions";
+import ReceiptForm from "@/components/receipts/ReceiptForm";
+import PaymentForm from "@/components/payments/PaymentForm";
 
 // Route name mapping for breadcrumbs
 const routeNameMap: Record<string, string> = {
@@ -54,6 +60,7 @@ export default function Header({ className }: HeaderProps = {}) {
 
   const { data: session } = useSession();
   const queryClient = useQueryClient();
+  const { hasPermission } = usePermissions();
 
   const displayName = session?.user?.name || currentUser.name;
   const displayEmail = session?.user?.email || currentUser.email;
@@ -96,6 +103,8 @@ export default function Header({ className }: HeaderProps = {}) {
   const [isTrustOpen, setIsTrustOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   // Fetch real notifications
   const { data: notificationsData } = useQuery({
@@ -268,6 +277,31 @@ export default function Header({ className }: HeaderProps = {}) {
           </AnimatePresence>
         </div>
 
+        {/* Quick Actions */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {hasPermission("RECEIPT_CREATE") && (
+            <button
+              onClick={() => setIsReceiptModalOpen(true)}
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-500/10 px-2.5 text-xs font-semibold text-emerald-600 hover:bg-emerald-500/20 shadow-sm transition-all duration-200 dark:border-emerald-900/40 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-emerald-400"
+              title="New Receipt"
+            >
+              <Banknote className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">New Receipt</span>
+            </button>
+          )}
+
+          {hasPermission("PAYMENT_CREATE") && (
+            <button
+              onClick={() => setIsPaymentModalOpen(true)}
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-500/10 px-2.5 text-xs font-semibold text-rose-600 hover:bg-rose-500/20 shadow-sm transition-all duration-200 dark:border-rose-900/40 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-rose-400"
+              title="New Payment"
+            >
+              <CreditCard className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">New Payment</span>
+            </button>
+          )}
+        </div>
+
         {/* Notifications Icon */}
         <div className="relative" ref={notificationsRef}>
           <button
@@ -418,6 +452,98 @@ export default function Header({ className }: HeaderProps = {}) {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* ─── QUICK ACTION: NEW RECEIPT MODAL ─────────────────────────── */}
+      <AnimatePresence>
+        {isReceiptModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsReceiptModalOpen(false)}
+              className="fixed inset-0 bg-black/55 backdrop-blur-sm"
+            />
+            {/* Modal panel */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 15 }}
+              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 md:p-8 shadow-2xl z-10 my-8 custom-scrollbar"
+            >
+              <button
+                onClick={() => setIsReceiptModalOpen(false)}
+                className="absolute top-5 right-5 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-250 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="h-4.5 w-4.5" />
+              </button>
+
+              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">
+                Record New Receipt
+              </h3>
+              <p className="text-xs text-slate-450 dark:text-slate-550 mb-6">
+                Fill details to record a receipt entry into the active trust ledger.
+              </p>
+
+              <ReceiptForm 
+                onSuccess={() => {
+                  queryClient.invalidateQueries({ queryKey: ["receipts", currentTrust?.id] });
+                  queryClient.invalidateQueries({ queryKey: ["dashboardStats", currentTrust?.id] });
+                  setIsReceiptModalOpen(false);
+                }} 
+                onCancel={() => setIsReceiptModalOpen(false)} 
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── QUICK ACTION: NEW PAYMENT MODAL ─────────────────────────── */}
+      <AnimatePresence>
+        {isPaymentModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-y-auto custom-scrollbar">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsPaymentModalOpen(false)}
+              className="fixed inset-0 bg-black/55 backdrop-blur-sm"
+            />
+            {/* Modal panel */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: 15 }}
+              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 md:p-8 shadow-2xl z-10 my-8 custom-scrollbar"
+            >
+              <button
+                onClick={() => setIsPaymentModalOpen(false)}
+                className="absolute top-5 right-5 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-250 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="h-4.5 w-4.5" />
+              </button>
+
+              <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">
+                Record New Payment
+              </h3>
+              <p className="text-xs text-slate-450 dark:text-slate-550 mb-6">
+                Fill details to record a payment entry into the active trust ledger.
+              </p>
+
+              <PaymentForm 
+                onSuccess={() => {
+                  queryClient.invalidateQueries({ queryKey: ["payments", currentTrust?.id] });
+                  queryClient.invalidateQueries({ queryKey: ["dashboardStats", currentTrust?.id] });
+                  setIsPaymentModalOpen(false);
+                }} 
+                onCancel={() => setIsPaymentModalOpen(false)} 
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

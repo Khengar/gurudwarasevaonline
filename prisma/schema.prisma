@@ -12,15 +12,15 @@ datasource db {
 // ─── LICENSES & TRUSTS ────────────────────────────────────────────
 
 model License {
-  id           String        @id @default(cuid())
-  licenseKey   String        @unique
-  issuedAt     DateTime      @default(now())
-  expiresAt    DateTime?
-  status       LicenseStatus @default(ACTIVE)
-  notes        String?
-  trusts       Trust[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id         String        @id @default(cuid())
+  licenseKey String        @unique
+  issuedAt   DateTime      @default(now())
+  expiresAt  DateTime?
+  status     LicenseStatus @default(ACTIVE)
+  notes      String?
+  trusts     Trust[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 }
 
 enum LicenseStatus {
@@ -31,33 +31,33 @@ enum LicenseStatus {
 }
 
 model Trust {
-  id             String     @id @default(cuid())
-  name           String
-  address        String?
-  city           String?
-  state          String?
-  phone          String?
-  email          String?
-  logo           String?    // file path/url
-  licenseId      String
-  license        License    @relation(fields: [licenseId], references: [id])
-  isActive       Boolean    @default(true)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  address   String?
+  city      String?
+  state     String?
+  phone     String?
+  email     String?
+  logo      String? // file path/url
+  licenseId String
+  license   License  @relation(fields: [licenseId], references: [id])
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  users          User[]
-  categoryHeads  CategoryHead[]
-  receipts       Receipt[]
-  payments       Payment[]
-  rooms          Room[]
-  roomBookings   RoomBooking[]
+  users         User[]
+  categoryHeads CategoryHead[]
+  receipts      Receipt[]
+  payments      Payment[]
+  rooms         Room[]
+  roomBookings  RoomBooking[]
 }
 
 // ─── USERS ────────────────────────────────────────────────────────
 
 model User {
   id           String    @id @default(cuid())
-  trustId      String?   // null = SUPERADMIN (system-wide)
+  trustId      String? // null = SUPERADMIN (system-wide)
   trust        Trust?    @relation(fields: [trustId], references: [id])
   name         String
   email        String    @unique
@@ -69,50 +69,50 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  createdReceipts   Receipt[]   @relation("ReceiptCreatedBy")
-  createdPayments   Payment[]   @relation("PaymentCreatedBy")
-  createdBookings   RoomBooking[] @relation("BookingCreatedBy")
+  createdReceipts Receipt[]     @relation("ReceiptCreatedBy")
+  createdPayments Payment[]     @relation("PaymentCreatedBy")
+  createdBookings RoomBooking[] @relation("BookingCreatedBy")
 }
 
 enum UserRole {
-  SUPERADMIN   // System-wide: manages trusts, licenses
-  ADMIN        // Trust-level: manages all data for one trust
-  USER         // Trust-level: data entry + view only
+  SUPERADMIN // System-wide: manages trusts, licenses
+  ADMIN // Trust-level: manages all data for one trust
+  USER // Trust-level: data entry + view only
 }
 
 // ─── CATEGORY HIERARCHY ───────────────────────────────────────────
 
 model CategoryHead {
-  id           String       @id @default(cuid())
-  trustId      String
-  trust        Trust        @relation(fields: [trustId], references: [id])
-  type         EntryType    // RECEIPT or PAYMENT
-  name         String
-  namePunjabi  String?
-  sortOrder    Int          @default(0)
-  isActive     Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id          String    @id @default(cuid())
+  trustId     String
+  trust       Trust     @relation(fields: [trustId], references: [id])
+  type        EntryType // RECEIPT or PAYMENT
+  name        String
+  namePunjabi String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  categories   Category[]
+  categories Category[]
 
   @@unique([trustId, type, name])
 }
 
 model Category {
-  id           String       @id @default(cuid())
-  headId       String
-  head         CategoryHead @relation(fields: [headId], references: [id])
-  trustId      String
-  name         String
-  namePunjabi  String?
-  sortOrder    Int          @default(0)
-  isActive     Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id          String       @id @default(cuid())
+  headId      String
+  head        CategoryHead @relation(fields: [headId], references: [id])
+  trustId     String
+  name        String
+  namePunjabi String?
+  sortOrder   Int          @default(0)
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
-  receipts     Receipt[]
-  payments     Payment[]
+  receipts Receipt[]
+  payments Payment[]
 
   @@unique([headId, name])
 }
@@ -134,9 +134,9 @@ model Receipt {
   address       String?
   amount        Decimal     @db.Decimal(12, 2)
   paymentType   PaymentType
-  chequeNo      String?     // if paymentType = CHEQUE
+  chequeNo      String? // if paymentType = CHEQUE
   bankName      String?
-  transactionId String?     // if UPI/ONLINE
+  transactionId String? // if UPI/ONLINE
   categoryId    String
   category      Category    @relation(fields: [categoryId], references: [id])
   notes         String?
@@ -189,22 +189,22 @@ enum PaymentType {
 // ─── ROOMS & BOOKINGS ─────────────────────────────────────────────
 
 model Room {
-  id            String       @id @default(cuid())
-  trustId       String
-  trust         Trust        @relation(fields: [trustId], references: [id])
-  roomNumber    String
-  name          String
-  type          RoomType
-  capacity      Int          @default(2)
-  ratePerDay    Decimal      @db.Decimal(10, 2)
-  description   String?
-  amenities     Json?        // array of strings: ["AC", "Hot Water", "TV"]
-  floor         String?
-  status        RoomStatus   @default(AVAILABLE)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  id          String     @id @default(cuid())
+  trustId     String
+  trust       Trust      @relation(fields: [trustId], references: [id])
+  roomNumber  String
+  name        String
+  type        RoomType
+  capacity    Int        @default(2)
+  ratePerDay  Decimal    @db.Decimal(10, 2)
+  description String?
+  amenities   Json? // array of strings: ["AC", "Hot Water", "TV"]
+  floor       String?
+  status      RoomStatus @default(AVAILABLE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
-  bookings      RoomBooking[]
+  bookings RoomBooking[]
 
   @@unique([trustId, roomNumber])
 }
@@ -225,35 +225,35 @@ enum RoomStatus {
 }
 
 model RoomBooking {
-  id              String        @id @default(cuid())
-  trustId         String
-  trust           Trust         @relation(fields: [trustId], references: [id])
-  bookingNo       String
-  roomId          String
-  room            Room          @relation(fields: [roomId], references: [id])
-  guestName       String
-  mobileNumber    String
-  email           String?
-  address         String?
-  idProofType     String?       // Aadhaar, PAN, Passport, etc.
-  idProofNo       String?
-  checkIn         DateTime
-  checkOut        DateTime
-  adults          Int           @default(1)
-  children        Int           @default(0)
-  totalNights     Int
-  ratePerNight    Decimal       @db.Decimal(10, 2)
-  totalAmount     Decimal       @db.Decimal(12, 2)
-  advancePaid     Decimal       @db.Decimal(12, 2) @default(0)
-  balanceDue      Decimal       @db.Decimal(12, 2) @default(0)
-  paymentStatus   BookingPaymentStatus @default(PENDING)
-  paymentType     PaymentType?
-  bookingStatus   BookingStatus @default(CONFIRMED)
-  notes           String?
-  createdById     String
-  createdBy       User          @relation("BookingCreatedBy", fields: [createdById], references: [id])
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  id            String               @id @default(cuid())
+  trustId       String
+  trust         Trust                @relation(fields: [trustId], references: [id])
+  bookingNo     String
+  roomId        String
+  room          Room                 @relation(fields: [roomId], references: [id])
+  guestName     String
+  mobileNumber  String
+  email         String?
+  address       String?
+  idProofType   String? // Aadhaar, PAN, Passport, etc.
+  idProofNo     String?
+  checkIn       DateTime
+  checkOut      DateTime
+  adults        Int                  @default(1)
+  children      Int                  @default(0)
+  totalNights   Int
+  ratePerNight  Decimal              @db.Decimal(10, 2)
+  totalAmount   Decimal              @db.Decimal(12, 2)
+  advancePaid   Decimal              @default(0) @db.Decimal(12, 2)
+  balanceDue    Decimal              @default(0) @db.Decimal(12, 2)
+  paymentStatus BookingPaymentStatus @default(PENDING)
+  paymentType   PaymentType?
+  bookingStatus BookingStatus        @default(CONFIRMED)
+  notes         String?
+  createdById   String
+  createdBy     User                 @relation("BookingCreatedBy", fields: [createdById], references: [id])
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
 
   @@unique([trustId, bookingNo])
 }
