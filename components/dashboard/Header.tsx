@@ -163,7 +163,7 @@ export default function Header({ className }: HeaderProps = {}) {
   const breadcrumbs = getBreadcrumbs();
 
   return (
-    <header className={`sticky top-0 z-20 flex h-16 w-full min-w-0 items-center justify-between border-b border-slate-200 bg-white/85 px-4 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/80 md:px-6 shadow-sm transition-colors duration-200 ${className || ""}`}>
+    <header className={`sticky top-0 ${isReceiptModalOpen || isPaymentModalOpen ? "z-[60]" : "z-20"} flex h-16 w-full min-w-0 items-center justify-between border-b border-slate-200 bg-white/85 px-4 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/80 md:px-6 shadow-sm transition-colors duration-200 ${className || ""}`}>
       
       {/* Left side: Sidebar trigger & Breadcrumbs */}
       <div className="flex items-center gap-3">
